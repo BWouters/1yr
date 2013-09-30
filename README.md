@@ -7,5 +7,4 @@ This webapplication generates a (JPG)-image based on a certain checkin on Foursq
 
 1. Clone the git repo — `git clone https://github.com/BWouters/1yr.git`
 2. Get your foursquare client-ID and secret-ID [Foursquare API My Apps] (https://foursquare.com/developers/apps)
-
-
+3. Use these keys in the appropraiate section
