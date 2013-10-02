@@ -1,9 +1,9 @@
 <?php
 	session_start();
+	include_once("config.php");
 	$key = $_REQUEST['code'];
 
-	$client_id ="QS1KWLTS5DQ1UXQLXGJCINX4OWAOLHHTQWNM41LD23CKGRDW";
-	$client_secret = "THKMCYBCS3TJEKC53ODYAERERJUECB5FXFHBY5QUFV1YAZSW";
+	
 	$redirect_uri = "http://1yr.visionsandviews.net/welcome.php"; //In this example the redirect_uri is just pointing back to this file
 
 	$uri = @file_get_contents("https://foursquare.com/oauth2/access_token?client_id=".$client_id."&client_secret=".$client_secret."&grant_type=authorization_code&redirect_uri=".$redirect_uri."&code=".$key, 
