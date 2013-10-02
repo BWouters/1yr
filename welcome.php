@@ -2,8 +2,8 @@
 	session_start();
 	$key = $_REQUEST['code'];
 
-	$client_id ="";
-	$client_secret = "";
+	$client_id ="QS1KWLTS5DQ1UXQLXGJCINX4OWAOLHHTQWNM41LD23CKGRDW";
+	$client_secret = "THKMCYBCS3TJEKC53ODYAERERJUECB5FXFHBY5QUFV1YAZSW";
 	$redirect_uri = "http://1yr.visionsandviews.net/welcome.php"; //In this example the redirect_uri is just pointing back to this file
 
 	$uri = @file_get_contents("https://foursquare.com/oauth2/access_token?client_id=".$client_id."&client_secret=".$client_secret."&grant_type=authorization_code&redirect_uri=".$redirect_uri."&code=".$key, 
@@ -51,23 +51,111 @@
 		else 	
 	    	$email="";
 	echo "<ul>";
-	foreach($obj->response->checkins->items as $item){
+	/*foreach($obj->response->checkins->items as $item){
 		$createdDataFormatted = DateTime::createFromFormat("U", $item->createdAt);
 		//print_r($createdDataFormatted);
-		$_SESSION['venues'][] = serialize($item);
+		//$_SESSION['venues'][] = serialize($item);
+		$imageURL = "user/".session_id()."/".$item->id.".jpg";
+		if(file_exists($imageURL)){
+			//echo "Image already created";
+		}
 		if($item->photos->count > 0){
 			foreach ($item->photos->items as $photo) {
 				$photoURL .= " <a href='image.php?venID=".$item->id."&photourl=".$photo->url."'>Use own photo</a>";
 			}
-			
+
 		}else{
 			$photoURL = "";
 		}
-		echo "<li>".$createdDataFormatted->format("Y-m-d H:i")." @ ".$item->venue->name." <a href='image.php?venID=".$item->id."'>Use this</a>".$photoURL."</li>";
+		//echo "<li>".$createdDataFormatted->format("Y-m-d H:i")." @ ".$item->venue->name." <a href='image.php?venID=".$item->id."'>Use this</a>".$photoURL."</li>";
 		
-	}
-	echo "</ul>";
+	}*/
+	//echo "</ul>";
+
 ?>
+<html>
+	<head>
+		<script src="https://maps.googleapis.com/maps/api/js?v=3&amp;sensor=false"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+		<style type="text/css">
+		#map{
+			width: 100%;
+			height: 100%;
+		}
+		</style>
+		<script type="text/javascript">
+		$(document).ready(function(){
+			var map;
+			var marker = null;
+			var infowindow = new google.maps.InfoWindow();
+			var bounds = new google.maps.LatLngBounds();
+			var loaded = false;
+			var counter = 0;
+			function initialize() {
+			  var mapOptions = {
+			    zoom: 8,
+			    center: new google.maps.LatLng(50.845175,4.357131),
+			    mapTypeId: google.maps.MapTypeId.ROADMAP
+			  };
+			  map = new google.maps.Map(document.getElementById('map'),
+			      mapOptions);
+
+			<?php
+			foreach ($obj->response->checkins->items as $item) {
+				$createdDataFormatted = DateTime::createFromFormat("U", $item->createdAt);
+				?>
+				var latLng = new google.maps.LatLng(<?php echo $item->venue->location->lat.",".$item->venue->location->lng; ?>);
+				marker = new google.maps.Marker({
+					position: latLng,
+					map:map,
+					<?php
+					$imageURL = "user/".session_id()."/".$item->id.".jpg";
+					if(file_exists($imageURL)){
+						?>
+						info: "<div id='checkinContent'><?php echo $item->venue->name ?><img src='<?php echo $imageURL; ?>' alt='<?php echo $item->venue->name; ?>' />",
+						<?php
+					}else{
+						$output = "";
+						if($item->photos->count > 0){
+							foreach ($item->photos->items as $photo) {
+								$output .= "<p><a href='image.php?venID=".$item->id."&photourl=".$photo->url."'>Use own photo</a></p>";
+							}
+						}else{
+							$output .= "<p><a href='image.php?venID=".$item->id."'>Create image</a></p>";
+						}
+						
+						?>
+						info: "<div id='checkinContent'><h1><?php echo $item->venue->name ?></h1><h2><?php echo $createdDataFormatted->format('Y-m-d H:i') ?> @ <?php echo $item->venue->name ?></h2><?php echo $output; ?></div>",
+						<?php
+					}
+					?>
+					
+					title: "<?php echo $item->venue->name; ?>",
+				});
+				google.maps.event.addListener(marker, 'click', function(){
+					infowindow.setContent(this.info);
+					infowindow.open(map, this);
+				});
+				//checkin.push(marker[counter]);
+				bounds.extend(latLng);
+			<?php
+			}
+			?>
+			map.fitBounds(bounds);
+			}
+			initialize();
+
+		});
+		</script>
+		
+	</head>
+	<body>
+		<div id="map">
+		</div>
+	</body>
+</html>
 
 
 
